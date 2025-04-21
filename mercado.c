@@ -52,6 +52,7 @@ Produto padaria[] =
 
 // Variáveis que recebem o total, utilizando *total para alterar o valor, de cada categoria
 float totalLimpeza = 0, totalAlimentos = 0, totalPadaria = 0, totalVendas = 0, totalAbertura = 0, abertura, fechamentoLipeza, fechamentoAlimento, fechamentoPadaria;
+int caixa_aberto = 0; // 0 para false e 1 para true;
 
 // Pode ser usado para pular linha
 int exibirMenu();
@@ -62,6 +63,7 @@ void calculoDesconto(float valorFinal, float recebido, float totalCompra);
 void aberturaCaixa(Produto produtos[], int tamanho);
 void fechamentoCaixa();
 void pularLinha();
+void maior_que_zero(int valor);
 
 int main()
 {
@@ -70,41 +72,63 @@ int main()
 
     do // Pelo menos uma vez vai ser mostrado a menu principal
     {
+
         escolha = exibirMenu();
-        switch (escolha)
+        if (caixa_aberto != 1 && escolha != 5)
         {
-        case 1:
-            exibirProdutos(limpeza, 7, &totalLimpeza); // chamamos a função e nos () colocamos as condições
-            break;
-        case 2:
-            exibirProdutos(alimentos, 7, &totalAlimentos);
-            break;
-        case 3:
-            exibirProdutos(padaria, 7, &totalPadaria);
-            break;
-        case 4:
-            realizarPagamento(); // chamamos a fução pagar, mas ela não precisa de condição
-            break;
-        case 5:
-            aberturaCaixa(padaria, 7);
-            break;
-        case 6:
-            fechamentoCaixa();
-            break;
-        case 7:
-            printf("\n\n\t\tSaindo do programa\n\n");
-            break;
-        default:
-            printf(" \n          Opição invalida\n\n");
-            break;
+            // if( ){ // realizar a abertura do caixa antes de dar continuidade no programa
+            printf("Realiza a abertura do caixa primeiramente \n");
+            //}
         }
-    } while (escolha != 7); // Se a escolha for diferente de 5 vai repetir se não vai parar o programa
+        else if (escolha == 7)
+        { // ver se tem que ajustar
+            printf("\n\n\t\tSaindo do programa\n\n");
+        }
+        else if (caixa_aberto == 1 && escolha == 5)
+        { // nao deixar reabrir o caixa
+            printf("\n\n\t\Caixa já foi aberto\n\n");
+        }
+        else
+        {
+            switch (escolha)
+            {
+            case 1:
+                int tamanho_limpeza = sizeof(limpeza) / sizeof(limpeza[0]); //  Divide o tamanho total pelo tamanho de um elemento para obter o número de elementos no array. (Google)
+                exibirProdutos(limpeza, tamanho_limpeza, &totalLimpeza);    // chamamos a função e nos () colocamos as condições
+                break;
+            case 2:
+                int tamanho_alimento = sizeof(alimentos) / sizeof(alimentos[0]);
+                exibirProdutos(alimentos, tamanho_alimento, &totalAlimentos);
+                break;
+            case 3:
+                int tamanho_padaria = sizeof(padaria) / sizeof(padaria[0]);
+                exibirProdutos(padaria, tamanho_padaria, &totalPadaria);
+                break;
+            case 4:
+                realizarPagamento(); // chamamos a fução pagar, mas ela não precisa de condição
+                break;
+            case 5:
+                aberturaCaixa(padaria, 7);
+                break;
+            case 6:
+                fechamentoCaixa();
+                break;
+            case 7:
+                printf("\n\n\t\tSaindo do programa\n\n");
+                break;
+            default:
+                printf(" \n          Opção invalida\n\n");
+                break;
+            }
+        }
+
+    } while (escolha != 7); // Se a escolha for diferente de 7 vai repetir se não vai parar o programa
     return 0;
 }
 
 int exibirMenu()
 {
-    int opcao;
+    char opcao[10]; // alterado para string, pois caso o usuario inserisse um caracter, ele bugava o codigo
     printf("\n\t\t\t\t\t  MENU PRINCIPAL \n\n");
     printf("\t\t\t\t________________________________\n\n");
     printf("\t\t\t\t|   1) Material de Limpeza\t|\n");
@@ -116,27 +140,38 @@ int exibirMenu()
     printf("\t\t\t\t|   7) sair\t\t\t|\n");
     printf("\t\t\t\t________________________________\n");
     printf("\n\t\t\t\t\t");
-    scanf("%d", &opcao);
-    return opcao;
+    fgets(opcao, sizeof(opcao), stdin);
+    return atoi(opcao); // Para transformar um valor de texto em um inteiro em C, a função atoi() da biblioteca stdlib.h pode ser usada (Google)
 }
 
 void aberturaCaixa(Produto produtos[], int tamanho)
 {
+    caixa_aberto = 1;
     printf("\t\t\t\t\tABERTURA DE CAIXA\n");
     printf("\t\t\t\t--------------------------------------\n\n\n");
     printf("\t\t\t\t\tInforme o estoque da Padaria\n\n");
     for (int i = 0; i < tamanho; i++)
     {
-        int estoquePadaria;
-        printf("\t\t\t\t%2d - %25s - R$%4.2f - %3d \n", produtos[i].codigo, produtos[i].nome, produtos[i].preco, produtos[i].estoque);
-        printf("\t\t\t\tQuantidade de %s: ", produtos[i].nome);
-        scanf("%d", &estoquePadaria);
-        pularLinha();
+        int estoquePadaria = 0;
+        do
+        {
+            printf("\t\t\t\t%2d - %25s - R$%4.2f - %3d \n", produtos[i].codigo, produtos[i].nome, produtos[i].preco, produtos[i].estoque);
+            printf("\t\t\t\tQuantidade de %s: ", produtos[i].nome);
+            scanf("%d", &estoquePadaria);
+            maior_que_zero(estoquePadaria); // funcao para printar mensagem
+            pularLinha();
+        } while (estoquePadaria < 0);
+
         produtos[i].estoque = estoquePadaria;
     }
-    printf("\n\n\t\t\t\tQuantia de dinheiro no caixa: ");
-    scanf("%f", &totalAbertura);
-    pularLinha();
+    do
+    {
+        printf("\n\n\t\t\t\tQuantia de dinheiro no caixa: ");
+        scanf("%f", &totalAbertura);
+        maior_que_zero(totalAbertura); // funcao para printar mensagem
+        pularLinha();
+    } while (totalAbertura < 0);
+
     printf("\t\t\t\tSaldo do caixa: R$%.2f\n", totalAbertura);
     abertura = totalAbertura;
     limparComEspera();
@@ -318,4 +353,12 @@ void fechamentoCaixa()
 void pularLinha()
 {
     printf("\n");
+}
+
+void maior_que_zero(int valor)
+{ // caso insira um valor menor que 0
+    if (valor < 0)
+    {
+        printf("\nQuantidade invalida, insira um valor maior ou igual a zero");
+    }
 }
