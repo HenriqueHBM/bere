@@ -181,7 +181,7 @@ void aberturaCaixa(Produto produtos[], int tamanho)
 void exibirProdutos(Produto produtos[], int tamanho, float *total)
 { // Função vai precisar de condições qual variavel na estrutura struct, tamanho e total
     int codigo, quantidade;
-    printf("\t\t\t\t--------------------------------------\n\n\n");
+    printf("\t\t\t\t--------------------------------------\n\n\n"); // trocar por uma funcao
     printf("\t\t\t\tSelecione o codigo do produto (precione 0 para voltar0):\n\n");
     printf("\t\t\t\tCódigo\t\t\tNome\tPreço\tEstoque\n");
     for (int i = 0; i < tamanho; i++)
@@ -211,13 +211,12 @@ void exibirProdutos(Produto produtos[], int tamanho, float *total)
                     *total += produtos[i].preco * quantidade; // Aqui que modificamos o ponteiro total
                     printf("\n\t\t\t\t%d DE %s FOI ADICIONADO AO CARRINHO. \n", quantidade, produtos[i].nome);
                     produtos[i].estoque = produtos[i].estoque - quantidade;
-                    // getchar(); // espera a tecla do usuário
-                    //  system("cls"); // limpa a tela
-                    //  return exibirProdutos(Produto produtos[], int tamanho,float*total);
                 }
                 else
                     printf("\n\n\t\t\t\t\tESTOQUE INSUFICIENTE\n");
-            }
+            }else
+                printf("Código invalido\n");
+            
         }
     }
     system("cls"); // limpa a tela
