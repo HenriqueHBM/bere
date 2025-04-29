@@ -86,7 +86,7 @@ int main()
         }
         else if (caixa_aberto == 1 && escolha == 5)
         { // nao deixar reabrir o caixa
-            printf("\n\n\t\Caixa já foi aberto\n\n");
+            printf("\n\n\t\\Caixa já foi aberto\n\n");
         }
         else
         {
@@ -129,17 +129,19 @@ int main()
 int exibirMenu()
 {
     char opcao[10]; // alterado para string, pois caso o usuario inserisse um caracter, ele bugava o codigo
-    printf("\n\t\t\t\t\t  MENU PRINCIPAL \n\n");
-    printf("\t\t\t\t________________________________\n\n");
-    printf("\t\t\t\t|   1) Cadastros\t|\n");
-    printf("\t\t\t\t|   2) Vendas\t|\n");
-    printf("\t\t\t\t|   3) Padaria\t\t\t|\n");
-    printf("\t\t\t\t|   4) Abertura de caixa\t|\n");
-    printf("\t\t\t\t|   5) Fechamento de caixa\t|\n");
-    printf("\t\t\t\t|   5) Relatórios\t|\n");
-    printf("\t\t\t\t|   6) sair\t\t\t|\n");
-    printf("\t\t\t\t________________________________\n");
-    printf("\n\t\t\t\t\t");
+    printf("\n");
+    printf("%50s\n", "=======================================");
+    printf("%50s\n", "|            MENU PRINCIPAL           |");
+    printf("%50s\n", "=======================================");
+    printf("%50s\n", "| 1) Cadastros                        |");
+    printf("%50s\n", "| 2) Vendas                           |");
+    printf("%50s\n", "| 3) Padaria                          |");
+    printf("%50s\n", "| 4) Abertura de caixa                |");
+    printf("%50s\n", "| 5) Fechamento de caixa              |");
+    printf("%51s\n", "| 6) Relatórios                       |");
+    printf("%50s\n", "| 7) Sair                             |");
+    printf("%50s\n", "======================================");
+    printf("%38s", "Escolha uma opção: ");
     fgets(opcao, sizeof(opcao), stdin);
     return atoi(opcao); // Para transformar um valor de texto em um inteiro em C, a função atoi() da biblioteca stdlib.h pode ser usada (Google)
 }
