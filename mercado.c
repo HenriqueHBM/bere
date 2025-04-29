@@ -131,13 +131,13 @@ int exibirMenu()
     char opcao[10]; // alterado para string, pois caso o usuario inserisse um caracter, ele bugava o codigo
     printf("\n\t\t\t\t\t  MENU PRINCIPAL \n\n");
     printf("\t\t\t\t________________________________\n\n");
-    printf("\t\t\t\t|   1) Material de Limpeza\t|\n");
-    printf("\t\t\t\t|   2) Venda de Alimentos\t|\n");
+    printf("\t\t\t\t|   1) Cadastros\t|\n");
+    printf("\t\t\t\t|   2) Vendas\t|\n");
     printf("\t\t\t\t|   3) Padaria\t\t\t|\n");
-    printf("\t\t\t\t|   4) Pagamento\t\t|\n");
-    printf("\t\t\t\t|   5) Abertura de caixa\t|\n");
-    printf("\t\t\t\t|   6) Fechamento de caixa\t|\n");
-    printf("\t\t\t\t|   7) sair\t\t\t|\n");
+    printf("\t\t\t\t|   4) Abertura de caixa\t|\n");
+    printf("\t\t\t\t|   5) Fechamento de caixa\t|\n");
+    printf("\t\t\t\t|   5) Relatórios\t|\n");
+    printf("\t\t\t\t|   6) sair\t\t\t|\n");
     printf("\t\t\t\t________________________________\n");
     printf("\n\t\t\t\t\t");
     fgets(opcao, sizeof(opcao), stdin);
