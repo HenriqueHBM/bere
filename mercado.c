@@ -28,7 +28,7 @@ Produto limpeza[] =
 
 Produto alimentos[] =
     {
-        // A condição da função para chamalá será alimento[]
+        
         {21, "Café", 19.99, 10},
         {22, "Leite(cx)", 5.90, 15},
         {23, "Arroz(1Kl)", 4.50, 10},
@@ -218,7 +218,7 @@ void exibirProdutos(Produto produtos[], int tamanho, float *total)
                     printf("\n\n\t\t\t\t\tESTOQUE INSUFICIENTE\n");
             }else
                 printf("Código invalido\n");
-            
+
         }
     }
     system("cls"); // limpa a tela
