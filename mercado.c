@@ -28,7 +28,6 @@ Produto limpeza[] =
 
 Produto alimentos[] =
     {
-        
         {21, "Café", 19.99, 10},
         {22, "Leite(cx)", 5.90, 15},
         {23, "Arroz(1Kl)", 4.50, 10},
@@ -50,9 +49,20 @@ Produto padaria[] =
         {37, "Salgado", 17.50, 0},
 };
 
+typedef struct
+{
+    int  cod;
+    char nome[100];
+    char nome_social[100];
+    char cpf[12];
+    char rua_num[50];
+    char bairro[50];
+    char celular[50];
+} Cliente;
+
 // Variáveis que recebem o total, utilizando *total para alterar o valor, de cada categoria
 float totalLimpeza = 0, totalAlimentos = 0, totalPadaria = 0, totalVendas = 0, totalAbertura = 0, abertura, fechamentoLipeza, fechamentoAlimento, fechamentoPadaria;
-int caixa_aberto = 0; // 0 para false e 1 para true;
+int caixa_aberto = 0, qtde_clientes = 0; // 0 para false e 1 para true;
 
 // Pode ser usado para pular linha
 int exibirMenu();
@@ -64,11 +74,14 @@ void aberturaCaixa(Produto produtos[], int tamanho);
 void fechamentoCaixa();
 void pularLinha();
 void maior_que_zero(int valor);
+void exibirCadastros();
+void cadastrarCliente(Cliente clientes[], int *qtde_clientes);
 
 int main()
 {
     setlocale(LC_ALL, "Portuguese");
     int escolha;
+    exibirCadastros();
 
     do // Pelo menos uma vez vai ser mostrado a menu principal
     {
@@ -93,6 +106,7 @@ int main()
             switch (escolha)
             {
             case 1:
+                exibirCadastros();
                 int tamanho_limpeza = sizeof(limpeza) / sizeof(limpeza[0]); //  Divide o tamanho total pelo tamanho de um elemento para obter o número de elementos no array. (Google)
                 exibirProdutos(limpeza, tamanho_limpeza, &totalLimpeza);    // chamamos a função e nos () colocamos as condições
                 break;
@@ -216,9 +230,9 @@ void exibirProdutos(Produto produtos[], int tamanho, float *total)
                 }
                 else
                     printf("\n\n\t\t\t\t\tESTOQUE INSUFICIENTE\n");
-            }else
+            }
+            else
                 printf("Código invalido\n");
-
         }
     }
     system("cls"); // limpa a tela
@@ -362,4 +376,48 @@ void maior_que_zero(int valor)
     {
         printf("\nQuantidade invalida, insira um valor maior ou igual a zero");
     }
+}
+
+void exibirCadastros()
+{
+    char opcao[2];
+    Cliente clientes[100]; //trocar por max
+    while (1)
+    {
+        printf("1. Menu Cadastros\n");
+        printf("\t\t1 - Cadastro de Clientes\n");
+        printf("\t\t2 - Cadastro de Produtos\n");
+        printf("\t\t3 - Retornar ao Menu Principal\n");
+        printf("Escolha uma opção: ");
+
+        fgets(opcao, sizeof(opcao), stdin);
+
+        switch (atoi(opcao))
+        {
+        case 1:
+            cadastrarCliente(clientes, &qtde_clientes);
+            break;
+        case 2:
+            printf("Cadastro de produtos ainda não implementado.\n");
+            break;
+        case 3:
+            printf("Voltando ao menu principal...\n");
+            return;
+        default:
+        printf("Voltando ao menu principal");
+        }
+
+        printf("\n");
+    }
+}
+
+void cadastrarCliente(Cliente clientes[], int *qtde_clientes){
+    Cliente novoCliente;
+
+    novoCliente.cod = *qtde_clientes + 1;
+
+    printf("%d", novoCliente.cod);
+
+    clientes[*qtde_clientes] = novoCliente;
+    (*qtde_clientes)++; // incrementando o ponteiro, funciona igual o +=, e o ponteiro nao entendo o ++ pois em c deixa o ponteiro confuso
 }
