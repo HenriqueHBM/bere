@@ -51,7 +51,7 @@ Produto padaria[] =
 
 typedef struct
 {
-    int  cod;
+    int cod;
     char nome[100];
     char nome_social[100];
     char cpf[12];
@@ -77,7 +77,7 @@ void maior_que_zero(int valor);
 void exibirCadastros();
 // void cadastrarCliente(Cliente clientes[], int *qtde_clientes);
 void cadastrarCliente(Cliente *);
-int contadorCaracterFile( char *nome_arquivo, char caracter_desejado);
+int contadorCaracterFile(char *nome_arquivo, char caracter_desejado);
 void limparBuffer();
 
 int main()
@@ -105,38 +105,37 @@ int main()
             printf("\n\n\t\\Caixa já foi aberto\n\n");
         }
         */
-            switch (escolha)
-            {
-            case 1:
-                exibirCadastros();
-                //int tamanho_limpeza = sizeof(limpeza) / sizeof(limpeza[0]); //  Divide o tamanho total pelo tamanho de um elemento para obter o número de elementos no array. (Google)
-                //exibirProdutos(limpeza, tamanho_limpeza, &totalLimpeza);    // chamamos a função e nos () colocamos as condições
-                break;
-            case 2:
-                int tamanho_alimento = sizeof(alimentos) / sizeof(alimentos[0]);
-                exibirProdutos(alimentos, tamanho_alimento, &totalAlimentos);
-                break;
-            case 3:
-                int tamanho_padaria = sizeof(padaria) / sizeof(padaria[0]);
-                exibirProdutos(padaria, tamanho_padaria, &totalPadaria);
-                break;
-            case 4:
-                realizarPagamento(); // chamamos a fução pagar, mas ela não precisa de condição
-                break;
-            case 5:
-                aberturaCaixa(padaria, 7);
-                break;
-            case 6:
-                fechamentoCaixa();
-                break;
-            case 7:
-                printf("\n\n\t\tSaindo do programa\n\n");
-                break;
-            default:
-                printf(" \n          Opção invalida\n\n");
-                break;
-            }
-        
+        switch (escolha)
+        {
+        case 1:
+            exibirCadastros();
+            // int tamanho_limpeza = sizeof(limpeza) / sizeof(limpeza[0]); //  Divide o tamanho total pelo tamanho de um elemento para obter o número de elementos no array. (Google)
+            // exibirProdutos(limpeza, tamanho_limpeza, &totalLimpeza);    // chamamos a função e nos () colocamos as condições
+            break;
+        case 2:
+            int tamanho_alimento = sizeof(alimentos) / sizeof(alimentos[0]);
+            exibirProdutos(alimentos, tamanho_alimento, &totalAlimentos);
+            break;
+        case 3:
+            int tamanho_padaria = sizeof(padaria) / sizeof(padaria[0]);
+            exibirProdutos(padaria, tamanho_padaria, &totalPadaria);
+            break;
+        case 4:
+            realizarPagamento(); // chamamos a fução pagar, mas ela não precisa de condição
+            break;
+        case 5:
+            aberturaCaixa(padaria, 7);
+            break;
+        case 6:
+            fechamentoCaixa();
+            break;
+        case 7:
+            printf("\n\n\t\tSaindo do programa\n\n");
+            break;
+        default:
+            printf(" \n          Opção invalida\n\n");
+            break;
+        }
 
     } while (escolha != 7); // Se a escolha for diferente de 7 vai repetir se não vai parar o programa
     return 0;
@@ -395,7 +394,7 @@ void exibirCadastros()
 
         fgets(opcao, sizeof(opcao), stdin);
 
-         //caso nao exista cria, se nao so atualiza;
+        // caso nao exista cria, se nao so atualiza;
         Cliente cliente;
         switch (atoi(opcao))
         {
@@ -409,7 +408,7 @@ void exibirCadastros()
             printf("Voltando ao menu principal...\n");
             return;
         default:
-        printf("Voltando ao menu principal");
+            printf("Voltando ao menu principal");
         }
 
         printf("\n");
@@ -427,25 +426,26 @@ void exibirCadastros()
 //     (*qtde_clientes)++; // incrementando o ponteiro, funciona igual o +=, e o ponteiro nao entendo o ++ pois em c deixa o ponteiro confuso
 // }
 
+void cadastrarCliente(Cliente *new_cliente)
+{
 
-void cadastrarCliente(Cliente *new_cliente){
-
-    char *nome_arquivo = "DadosClientes.txt";
+    char *nome_arquivo = "DadosClientes.txt"; // declarando como ponteiro, para usar dentro do fopen da funcao a seguir
     int contador = 0;
-    int ch; 
+    int ch;
     FILE *arquivo;
 
-    arquivo = fopen(nome_arquivo, "a+");
+    arquivo = fopen(nome_arquivo, "a+"); // adicao ou escrita do arquivo
 
     contador = contadorCaracterFile(nome_arquivo, '\n');
     new_cliente->cod = contador + 1; // add 1 ao contador, pois inicia zerado
 
-    if(new_cliente->cod == 0) printf("Pressione Enter Para Cadastrar\n");
-    limparBuffer(); //verifica a entrada/limpar buffer // ajuste da funcao do Wesley
+    if (new_cliente->cod == 0)
+        printf("Pressione Enter Para Cadastrar\n");
+    limparBuffer(); // verifica a entrada/limpar buffer // ajuste da funcao do Wesley
 
     printf("Insira o Nome: \n");
-    fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin); 
-    new_cliente->nome[strcspn(new_cliente->nome, "\n")] = '\0'; //removendo o "enter" da string
+    fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin);
+    new_cliente->nome[strcspn(new_cliente->nome, "\n")] = '\0'; // removendo o ("enter",\n) da string
 
     printf("Insira um nome social:");
     fgets(new_cliente->nome_social, sizeof(new_cliente->nome_social), stdin);
@@ -467,28 +467,31 @@ void cadastrarCliente(Cliente *new_cliente){
     fgets(new_cliente->celular, sizeof(new_cliente->celular), stdin);
     new_cliente->celular[strcspn(new_cliente->celular, "\n")] = '\0';
 
-    fprintf(arquivo, "%d,%s,%s,%s,%s,%s,%s\n", 
-        new_cliente->cod, new_cliente->nome, new_cliente->nome_social, 
-        new_cliente->cpf, new_cliente->rua_num, new_cliente->bairro, new_cliente->celular
-    );
+    fprintf(arquivo, "%d,%s,%s,%s,%s,%s,%s\n", // salvando as informacoes no arquivo
+            new_cliente->cod, new_cliente->nome, new_cliente->nome_social,
+            new_cliente->cpf, new_cliente->rua_num, new_cliente->bairro, new_cliente->celular);
 
-    fclose(arquivo);
+    fclose(arquivo); // fechando o arquivo
 }
 
-int contadorCaracterFile(char *nome_arquivo, char caracter_desejado){ // funcao para contar quantos caracteres especificos possuem em um arquivo
+int contadorCaracterFile(char *nome_arquivo, char caracter_desejado)
+{ // funcao para contar quantos caracteres especificos possuem em um arquivo
     int contador = 0;
     char caracter;
     FILE *arquivo = fopen(nome_arquivo, "r"); // abrindo o arquivo
 
-    if (arquivo == NULL) { // caso de um erro ao abrir o arquivo
+    if (arquivo == NULL)
+    { // caso de um erro ao abrir o arquivo
         printf("Erro ao abrir o arquivo.\n");
         return 0;
     }
     // fgetc le um caracter por vez do arquivo, o caracter lido e armazenado na variavel
-    //o loop continua ate o final do arquivo
-    while ((caracter = fgetc(arquivo)) != EOF){ 
-        if(caracter == caracter_desejado){
-            contador++; //incrementando o contador
+    // o loop continua ate o final do arquivo
+    while ((caracter = fgetc(arquivo)) != EOF)
+    {
+        if (caracter == caracter_desejado)
+        {
+            contador++; // incrementando o contador
         }
     }
 
@@ -497,7 +500,9 @@ int contadorCaracterFile(char *nome_arquivo, char caracter_desejado){ // funcao 
     return contador;
 }
 
-void limparBuffer() {
+void limparBuffer()
+{
     int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF);
+    while ((ch = getchar()) != '\n' && ch != EOF)
+        ;
 }
