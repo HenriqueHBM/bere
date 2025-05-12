@@ -439,9 +439,7 @@ void cadastrarCliente(Cliente *new_cliente)
     contador = contadorCaracterFile(nome_arquivo, '\n');
     new_cliente->cod = contador + 1; // add 1 ao contador, pois inicia zerado
 
-    if (new_cliente->cod == 0)
-        printf("Pressione Enter Para Cadastrar\n");
-    limparBuffer(); // verifica a entrada/limpar buffer // ajuste da funcao do Wesley
+    limparBuffer(); // verifica a entrada/limpa buffer // ajuste da funcao do Wesley
 
     printf("Insira o Nome: \n");
     fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin);
@@ -503,6 +501,7 @@ int contadorCaracterFile(char *nome_arquivo, char caracter_desejado)
 void limparBuffer()
 {
     int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF)
-        ;
+    // descarte todos os caracter que ainda estao no buffer, como \n
+    //garantindo que o próximo comando de entrada comece em uma entrada limpa
+    while ((ch = getchar()) != '\n' && ch != EOF); 
 }
