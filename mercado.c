@@ -76,8 +76,9 @@ void pularLinha();
 void maior_que_zero(int valor);
 void exibirCadastros();
 // void cadastrarCliente(Cliente clientes[], int *qtde_clientes);
-void cadastrarCliente(FILE *, Cliente *);
-int contadorCaracterFile( char nome_arquivo, char caracter_desejado);
+void cadastrarCliente(Cliente *);
+int contadorCaracterFile( char *nome_arquivo, char caracter_desejado);
+void limparBuffer();
 
 int main()
 {
@@ -85,18 +86,11 @@ int main()
     int escolha;
     int teste = 0;
 
-    const char *arquivo = "Dados.txt";
-    char c = '\n';
-
-    teste =  contadorCaracterFile(&arquivo, c);
-    return teste;
-    exibirCadastros();
-
     do // Pelo menos uma vez vai ser mostrado a menu principal
     {
 
         escolha = exibirMenu();
-        if (caixa_aberto != 1 && escolha != 5)
+        /*if (caixa_aberto != 1 && escolha != 5)
         {
             // if( ){ // realizar a abertura do caixa antes de dar continuidade no programa
             printf("Realiza a abertura do caixa primeiramente \n");
@@ -110,14 +104,13 @@ int main()
         { // nao deixar reabrir o caixa
             printf("\n\n\t\\Caixa já foi aberto\n\n");
         }
-        else
-        {
+        */
             switch (escolha)
             {
             case 1:
                 exibirCadastros();
-                int tamanho_limpeza = sizeof(limpeza) / sizeof(limpeza[0]); //  Divide o tamanho total pelo tamanho de um elemento para obter o número de elementos no array. (Google)
-                exibirProdutos(limpeza, tamanho_limpeza, &totalLimpeza);    // chamamos a função e nos () colocamos as condições
+                //int tamanho_limpeza = sizeof(limpeza) / sizeof(limpeza[0]); //  Divide o tamanho total pelo tamanho de um elemento para obter o número de elementos no array. (Google)
+                //exibirProdutos(limpeza, tamanho_limpeza, &totalLimpeza);    // chamamos a função e nos () colocamos as condições
                 break;
             case 2:
                 int tamanho_alimento = sizeof(alimentos) / sizeof(alimentos[0]);
@@ -143,7 +136,7 @@ int main()
                 printf(" \n          Opção invalida\n\n");
                 break;
             }
-        }
+        
 
     } while (escolha != 7); // Se a escolha for diferente de 7 vai repetir se não vai parar o programa
     return 0;
@@ -164,7 +157,7 @@ int exibirMenu()
     printf("%51s\n", "| 6) Relatórios                       |");
     printf("%50s\n", "| 7) Sair                             |");
     printf("%50s\n", "======================================");
-    printf("%38s", "Escolha uma opção: ");
+    printf("%32s", "Escolha uma opção: ");
     fgets(opcao, sizeof(opcao), stdin);
     return atoi(opcao); // Para transformar um valor de texto em um inteiro em C, a função atoi() da biblioteca stdlib.h pode ser usada (Google)
 }
@@ -402,13 +395,12 @@ void exibirCadastros()
 
         fgets(opcao, sizeof(opcao), stdin);
 
+         //caso nao exista cria, se nao so atualiza;
         Cliente cliente;
-        arquivo = fopen("DadosClientes.txt", "a+"); //caso nao exista cria, se nao so atualiza;
-
         switch (atoi(opcao))
         {
         case 1:
-            // cadastrarCliente(&arquivo, &cliente);
+            cadastrarCliente(&cliente);
             break;
         case 2:
             printf("Cadastro de produtos ainda não implementado.\n");
@@ -436,14 +428,24 @@ void exibirCadastros()
 // }
 
 
-void cadastrarCliente(FILE *arquivo, Cliente *new_cliente){
+void cadastrarCliente(Cliente *new_cliente){
+
+    char *nome_arquivo = "DadosClientes.txt";
+    int contador = 0;
     int ch; 
-    //if(*contagem == 0) printf("Pressione Enter Para Cadastrar\n");
-    while ((ch = getchar()) != '\n' && ch != EOF); //verifica a entrada/limpar buffer // ajuste da funcao do Wesley
+    FILE *arquivo;
+
+    arquivo = fopen(nome_arquivo, "a+");
+
+    contador = contadorCaracterFile(nome_arquivo, '\n');
+    new_cliente->cod = contador + 1; // add 1 ao contador, pois inicia zerado
+
+    if(new_cliente->cod == 0) printf("Pressione Enter Para Cadastrar\n");
+    limparBuffer(); //verifica a entrada/limpar buffer // ajuste da funcao do Wesley
 
     printf("Insira o Nome: \n");
-    fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin);
-    new_cliente->nome[strcspn(new_cliente->nome, "\n")] = '\0';
+    fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin); 
+    new_cliente->nome[strcspn(new_cliente->nome, "\n")] = '\0'; //removendo o "enter" da string
 
     printf("Insira um nome social:");
     fgets(new_cliente->nome_social, sizeof(new_cliente->nome_social), stdin);
@@ -465,29 +467,37 @@ void cadastrarCliente(FILE *arquivo, Cliente *new_cliente){
     fgets(new_cliente->celular, sizeof(new_cliente->celular), stdin);
     new_cliente->celular[strcspn(new_cliente->celular, "\n")] = '\0';
 
-    // add o codigo tbm
-    fprintf(arquivo, "%d,%s,%s,%s,%s,%s,%s\n");
+    fprintf(arquivo, "%d,%s,%s,%s,%s,%s,%s\n", 
+        new_cliente->cod, new_cliente->nome, new_cliente->nome_social, 
+        new_cliente->cpf, new_cliente->rua_num, new_cliente->bairro, new_cliente->celular
+    );
+
+    fclose(arquivo);
 }
 
-int contadorCaracterFile(const char *nome_arquivo, char caracter_desejado){
+int contadorCaracterFile(char *nome_arquivo, char caracter_desejado){ // funcao para contar quantos caracteres especificos possuem em um arquivo
     int contador = 0;
     char caracter;
-    FILE *arquivo = fopen("Dados.txt", "r");
+    FILE *arquivo = fopen(nome_arquivo, "r"); // abrindo o arquivo
 
-    if (arquivo == NULL) {
+    if (arquivo == NULL) { // caso de um erro ao abrir o arquivo
         printf("Erro ao abrir o arquivo.\n");
         return 0;
     }
-
-    while ((caracter = fgetc(arquivo)) != EOF){
+    // fgetc le um caracter por vez do arquivo, o caracter lido e armazenado na variavel
+    //o loop continua ate o final do arquivo
+    while ((caracter = fgetc(arquivo)) != EOF){ 
         if(caracter == caracter_desejado){
-            contador++;
+            contador++; //incrementando o contador
         }
     }
 
     fclose(arquivo);
 
-    printf("Quantidade de %s e de %d", caracter_desejado, contador);
-
     return contador;
+}
+
+void limparBuffer() {
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF);
 }
