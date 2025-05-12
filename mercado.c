@@ -75,12 +75,21 @@ void fechamentoCaixa();
 void pularLinha();
 void maior_que_zero(int valor);
 void exibirCadastros();
-void cadastrarCliente(Cliente clientes[], int *qtde_clientes);
+// void cadastrarCliente(Cliente clientes[], int *qtde_clientes);
+void cadastrarCliente(FILE *, Cliente *);
+int contadorCaracterFile( char nome_arquivo, char caracter_desejado);
 
 int main()
 {
     setlocale(LC_ALL, "Portuguese");
     int escolha;
+    int teste = 0;
+
+    const char *arquivo = "Dados.txt";
+    char c = '\n';
+
+    teste =  contadorCaracterFile(&arquivo, c);
+    return teste;
     exibirCadastros();
 
     do // Pelo menos uma vez vai ser mostrado a menu principal
@@ -381,7 +390,8 @@ void maior_que_zero(int valor)
 void exibirCadastros()
 {
     char opcao[2];
-    Cliente clientes[100]; //trocar por max
+    // Cliente clientes[100]; //trocar por max
+    FILE *arquivo;
     while (1)
     {
         printf("1. Menu Cadastros\n");
@@ -392,10 +402,13 @@ void exibirCadastros()
 
         fgets(opcao, sizeof(opcao), stdin);
 
+        Cliente cliente;
+        arquivo = fopen("DadosClientes.txt", "a+"); //caso nao exista cria, se nao so atualiza;
+
         switch (atoi(opcao))
         {
         case 1:
-            cadastrarCliente(clientes, &qtde_clientes);
+            // cadastrarCliente(&arquivo, &cliente);
             break;
         case 2:
             printf("Cadastro de produtos ainda não implementado.\n");
@@ -411,13 +424,70 @@ void exibirCadastros()
     }
 }
 
-void cadastrarCliente(Cliente clientes[], int *qtde_clientes){
-    Cliente novoCliente;
+// void cadastrarCliente(Cliente clientes[], int *qtde_clientes){
+//     Cliente novoCliente;
 
-    novoCliente.cod = *qtde_clientes + 1;
+//     novoCliente.cod = *qtde_clientes + 1;
 
-    printf("%d", novoCliente.cod);
+//     printf("%d", novoCliente.cod);
 
-    clientes[*qtde_clientes] = novoCliente;
-    (*qtde_clientes)++; // incrementando o ponteiro, funciona igual o +=, e o ponteiro nao entendo o ++ pois em c deixa o ponteiro confuso
+//     clientes[*qtde_clientes] = novoCliente;
+//     (*qtde_clientes)++; // incrementando o ponteiro, funciona igual o +=, e o ponteiro nao entendo o ++ pois em c deixa o ponteiro confuso
+// }
+
+
+void cadastrarCliente(FILE *arquivo, Cliente *new_cliente){
+    int ch; 
+    //if(*contagem == 0) printf("Pressione Enter Para Cadastrar\n");
+    while ((ch = getchar()) != '\n' && ch != EOF); //verifica a entrada/limpar buffer // ajuste da funcao do Wesley
+
+    printf("Insira o Nome: \n");
+    fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin);
+    new_cliente->nome[strcspn(new_cliente->nome, "\n")] = '\0';
+
+    printf("Insira um nome social:");
+    fgets(new_cliente->nome_social, sizeof(new_cliente->nome_social), stdin);
+    new_cliente->nome_social[strcspn(new_cliente->nome_social, "\n")] = '\0';
+
+    printf("Insira o cpf:");
+    fgets(new_cliente->cpf, sizeof(new_cliente->cpf), stdin);
+    new_cliente->cpf[strcspn(new_cliente->cpf, "\n")] = '\0';
+
+    printf("Insira o nome da rua ou o numero da residencia:");
+    fgets(new_cliente->rua_num, sizeof(new_cliente->rua_num), stdin);
+    new_cliente->rua_num[strcspn(new_cliente->rua_num, "\n")] = '\0';
+
+    printf("Insira o bairro:");
+    fgets(new_cliente->bairro, sizeof(new_cliente->bairro), stdin);
+    new_cliente->bairro[strcspn(new_cliente->bairro, "\n")] = '\0';
+
+    printf("Insira o numero de telefone:");
+    fgets(new_cliente->celular, sizeof(new_cliente->celular), stdin);
+    new_cliente->celular[strcspn(new_cliente->celular, "\n")] = '\0';
+
+    // add o codigo tbm
+    fprintf(arquivo, "%d,%s,%s,%s,%s,%s,%s\n");
+}
+
+int contadorCaracterFile(const char *nome_arquivo, char caracter_desejado){
+    int contador = 0;
+    char caracter;
+    FILE *arquivo = fopen("Dados.txt", "r");
+
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return 0;
+    }
+
+    while ((caracter = fgetc(arquivo)) != EOF){
+        if(caracter == caracter_desejado){
+            contador++;
+        }
+    }
+
+    fclose(arquivo);
+
+    printf("Quantidade de %s e de %d", caracter_desejado, contador);
+
+    return contador;
 }
