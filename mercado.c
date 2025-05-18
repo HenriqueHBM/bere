@@ -4,6 +4,7 @@
 #include <time.h>   // tempo do computador
 #include <string.h> // bibliotecas de string
 
+#define DADOSCLIENTES "DadosClientes.txt"
 // Estrutura struct para formato dos dados dos produtos
 typedef struct
 {
@@ -79,6 +80,8 @@ void exibirCadastros();
 void cadastrarCliente(Cliente *);
 int contadorCaracterFile(char *nome_arquivo, char caracter_desejado);
 void limparBuffer();
+int verificaArquivo(FILE *arquivo);
+void removeEnterTexto(char *);
 
 int main()
 {
@@ -381,7 +384,7 @@ void maior_que_zero(int valor)
 
 void exibirCadastros()
 {
-    char opcao[2];
+    char opcao[10];
     // Cliente clientes[100]; //trocar por max
     FILE *arquivo;
     while (1)
@@ -426,44 +429,56 @@ void exibirCadastros()
 //     (*qtde_clientes)++; // incrementando o ponteiro, funciona igual o +=, e o ponteiro nao entendo o ++ pois em c deixa o ponteiro confuso
 // }
 
+
 void cadastrarCliente(Cliente *new_cliente)
 {
 
-    char *nome_arquivo = "DadosClientes.txt"; // declarando como ponteiro, para usar dentro do fopen da funcao a seguir
+    char *nome_arquivo = DADOSCLIENTES; // declarando como ponteiro, para usar dentro do fopen da funcao a seguir
     int contador = 0;
-    int ch;
     FILE *arquivo;
 
-    arquivo = fopen(nome_arquivo, "a+"); // adicao ou escrita do arquivo
+    // Verifica se o arquivo existe e conta as linhas
+    arquivo = fopen(nome_arquivo, "a+");
+    if (verificaArquivo(arquivo)) return;
+    fclose(arquivo);
 
     contador = contadorCaracterFile(nome_arquivo, '\n');
-    new_cliente->cod = contador + 1; // add 1 ao contador, pois inicia zerado
+    new_cliente->cod = contador + 1;
 
     limparBuffer(); // verifica a entrada/limpa buffer // ajuste da funcao do Wesley
 
-    printf("Insira o Nome: \n");
+    printf("Insira o Nome: \t");
     fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin);
-    new_cliente->nome[strcspn(new_cliente->nome, "\n")] = '\0'; // removendo o ("enter",\n) da string
+    removeEnterTexto(new_cliente->nome); // removendo o ("enter",\n) da string
 
-    printf("Insira um nome social:");
+    printf("Insira um nome social: \t");
     fgets(new_cliente->nome_social, sizeof(new_cliente->nome_social), stdin);
-    new_cliente->nome_social[strcspn(new_cliente->nome_social, "\n")] = '\0';
+    removeEnterTexto(new_cliente->nome_social);
 
-    printf("Insira o cpf:");
-    fgets(new_cliente->cpf, sizeof(new_cliente->cpf), stdin);
-    new_cliente->cpf[strcspn(new_cliente->cpf, "\n")] = '\0';
+    do{ // verificacao simples para o tamanho do cpf
+        printf("Insira o cpf: \t");
+        fgets(new_cliente->cpf, sizeof(new_cliente->cpf), stdin);
+        removeEnterTexto(new_cliente->cpf);
 
-    printf("Insira o nome da rua ou o numero da residencia:");
+    }while((strlen(new_cliente->cpf) != 11));
+    limparBuffer(); 
+
+    printf("Insira o nome da rua ou o numero da residencia: \t");
     fgets(new_cliente->rua_num, sizeof(new_cliente->rua_num), stdin);
-    new_cliente->rua_num[strcspn(new_cliente->rua_num, "\n")] = '\0';
+    removeEnterTexto(new_cliente->rua_num);
 
-    printf("Insira o bairro:");
+    printf("Insira o bairro: \t");
     fgets(new_cliente->bairro, sizeof(new_cliente->bairro), stdin);
-    new_cliente->bairro[strcspn(new_cliente->bairro, "\n")] = '\0';
+    removeEnterTexto(new_cliente->bairro);
 
-    printf("Insira o numero de telefone:");
+    printf("Insira o numero de telefone: \t");
     fgets(new_cliente->celular, sizeof(new_cliente->celular), stdin);
-    new_cliente->celular[strcspn(new_cliente->celular, "\n")] = '\0';
+    removeEnterTexto(new_cliente->celular);
+
+    arquivo = fopen(nome_arquivo, "a");
+    if (verificaArquivo(arquivo)) {
+        return;
+    }
 
     fprintf(arquivo, "%d,%s,%s,%s,%s,%s,%s\n", // salvando as informacoes no arquivo
             new_cliente->cod, new_cliente->nome, new_cliente->nome_social,
@@ -504,4 +519,16 @@ void limparBuffer()
     // descarte todos os caracter que ainda estao no buffer, como \n
     //garantindo que o próximo comando de entrada comece em uma entrada limpa
     while ((ch = getchar()) != '\n' && ch != EOF); 
+}
+
+int verificaArquivo(FILE *arquivo) {
+    if (arquivo == NULL) {
+        perror("Erro ao abrir o arquivo"); // mostra erro mais detalhado
+        return 1; // indica erro
+    }
+    return 0; // tudo certo
+}
+
+void removeEnterTexto(char *texto){
+    texto[strcspn(texto, "\n")] = '\0'; //remove o "enter/ \n" do texto
 }
