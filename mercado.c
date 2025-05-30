@@ -17,6 +17,11 @@
 
 /* Structs --------------------------*/
 
+
+
+#define DADOSCLIENTES "DadosClientes.txt"
+// Estrutura struct para formato dos dados dos produtos
+
 typedef struct
 {
     int id;
@@ -87,6 +92,7 @@ int contadorCaracterFile(char *, char);
 void limparBuffer();
 int verificaArquivo(FILE *arquivo);
 void removeEnterTexto(char *);
+
 int exibirMenu();
 void exibirVendas();
 void exibirCadastros();
@@ -102,6 +108,7 @@ void pular_Linha()
 {
     printf("\n");
 }
+
 
 int main()
 {
@@ -178,8 +185,10 @@ int exibirMenu()
 void exibirCadastros()
 {
     char opcao[10];
+
     Cadastrar_Produtos *pt_Produtos = NULL;
     int quantidade = 0;
+
     FILE *arquivo;
     while (1)
     {
@@ -232,6 +241,7 @@ void exibirCadastros()
     }
 }
 
+
 void cadastrarCliente(Cliente *new_cliente)
 {
 
@@ -241,8 +251,9 @@ void cadastrarCliente(Cliente *new_cliente)
 
     // Verifica se o arquivo existe e conta as linhas
     arquivo = fopen(nome_arquivo, "a+");
-    if (verificaArquivo(arquivo))
-        return;
+
+    if (verificaArquivo(arquivo)) return;
+
     fclose(arquivo);
 
     contador = contadorCaracterFile(nome_arquivo, '\n');
@@ -258,6 +269,7 @@ void cadastrarCliente(Cliente *new_cliente)
     fgets(new_cliente->nome_social, sizeof(new_cliente->nome_social), stdin);
     removeEnterTexto(new_cliente->nome_social);
 
+
     do
     { // verificacao simples para o tamanho do cpf
         printf("Insira o cpf: \t");
@@ -266,6 +278,7 @@ void cadastrarCliente(Cliente *new_cliente)
 
     } while ((strlen(new_cliente->cpf) != 11));
     limparBuffer();
+
 
     printf("Insira o nome da rua ou o numero da residencia: \t");
     fgets(new_cliente->rua_num, sizeof(new_cliente->rua_num), stdin);
@@ -280,8 +293,9 @@ void cadastrarCliente(Cliente *new_cliente)
     removeEnterTexto(new_cliente->celular);
 
     arquivo = fopen(nome_arquivo, "a");
-    if (verificaArquivo(arquivo))
-    {
+
+    if (verificaArquivo(arquivo)) {
+
         return;
     }
 
@@ -322,17 +336,20 @@ void limparBuffer()
 {
     int ch;
     // descarte todos os caracter que ainda estao no buffer, como \n
-    // garantindo que o próximo comando de entrada comece em uma entrada limpa
-    while ((ch = getchar()) != '\n' && ch != EOF)
-        ;
+
+    //garantindo que o próximo comando de entrada comece em uma entrada limpa
+    while ((ch = getchar()) != '\n' && ch != EOF); 
 }
 
-int verificaArquivo(FILE *arquivo)
-{
-    if (arquivo == NULL)
-    {
+int verificaArquivo(FILE *arquivo) {
+    if (arquivo == NULL) {
         perror("Erro ao abrir o arquivo"); // mostra erro mais detalhado
-        return 1;                          // indica erro
+        return 1; // indica erro
+
+      
+      
+      
+    
     }
     return 0; // tudo certo
 }
