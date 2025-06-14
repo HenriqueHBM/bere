@@ -1,6 +1,11 @@
 {
     "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
     "files.associations": {
+<<<<<<< HEAD
         "ctype.h": "c"
+=======
+        "unistd.h": "c",
+        "math.h": "c"
+>>>>>>> d5ec43b46d70f7885479ca9ed29ff5ee7d00c605
     }
 }
