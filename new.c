@@ -56,7 +56,7 @@ void removeEnterTexto(char *);
 int contadorCaracterFile(char *, char);
 void cadastrar_usuario();
 void show_usuarios();
-void cadastrarCliente(Cliente *);
+void cadastrarCliente();
 int verificaArquivo(FILE *arquivo);
 void limparBuffer();
 void cadastrarCategorias();
@@ -146,7 +146,7 @@ void main_cadastros()
             show_usuarios();
             break;
         case 2:
-            cadastrarCliente(&cliente);
+            cadastrarCliente();
             break;
         case 3:
              // Aqui usei realloc para sempre termos memória e espaço no "deposito" e não passar por cima do estoque antigo
@@ -287,9 +287,9 @@ int contadorCaracterFile(char *nome_arquivo, char caracter_desejado)
     return contador;
 }
 
-void cadastrarCliente(Cliente *new_cliente)
+void cadastrarCliente()
 {
-    Cliente cliente;
+    Cliente new_cliente;
     char *nome_arquivo = DADOSCLIENTES; // declarando como ponteiro, para usar dentro do fopen da funcao a seguir
     int contador = 0;
     FILE *arquivo;
@@ -301,38 +301,38 @@ void cadastrarCliente(Cliente *new_cliente)
     fclose(arquivo);
 
     contador = contadorCaracterFile(nome_arquivo, '\n');
-    new_cliente->cod = contador + 1;
+    new_cliente.cod = contador + 1;
 
     limparBuffer(); // verifica a entrada/limpa buffer // ajuste da funcao do Wesley
 
     printf("Insira o Nome: \t");
-    fgets(new_cliente->nome, sizeof(new_cliente->nome), stdin);
-    removeEnterTexto(new_cliente->nome); // removendo o ("enter",\n) da string
+    fgets(new_cliente.nome, sizeof(new_cliente.nome), stdin);
+    removeEnterTexto(new_cliente.nome); // removendo o ("enter",\n) da string
 
     printf("Insira um nome social: \t");
-    fgets(new_cliente->nome_social, sizeof(new_cliente->nome_social), stdin);
-    removeEnterTexto(new_cliente->nome_social);
+    fgets(new_cliente.nome_social, sizeof(new_cliente.nome_social), stdin);
+    removeEnterTexto(new_cliente.nome_social);
 
     do
     { // verificacao simples para o tamanho do cpf
         printf("Insira o cpf: \t");
-        fgets(new_cliente->cpf, sizeof(new_cliente->cpf), stdin);
-        removeEnterTexto(new_cliente->cpf);
+        fgets(new_cliente.cpf, sizeof(new_cliente.cpf), stdin);
+        removeEnterTexto(new_cliente.cpf);
 
-    } while ((strlen(new_cliente->cpf) != 11));
+    } while ((strlen(new_cliente.cpf) != 11));
     limparBuffer();
 
     printf("Insira o nome da rua ou o numero da residencia: \t");
-    fgets(new_cliente->rua_num, sizeof(new_cliente->rua_num), stdin);
-    removeEnterTexto(new_cliente->rua_num);
+    fgets(new_cliente.rua_num, sizeof(new_cliente.rua_num), stdin);
+    removeEnterTexto(new_cliente.rua_num);
 
     printf("Insira o bairro: \t");
-    fgets(new_cliente->bairro, sizeof(new_cliente->bairro), stdin);
-    removeEnterTexto(new_cliente->bairro);
+    fgets(new_cliente.bairro, sizeof(new_cliente.bairro), stdin);
+    removeEnterTexto(new_cliente.bairro);
 
     printf("Insira o numero de telefone: \t");
-    fgets(new_cliente->celular, sizeof(new_cliente->celular), stdin);
-    removeEnterTexto(new_cliente->celular);
+    fgets(new_cliente.celular, sizeof(new_cliente.celular), stdin);
+    removeEnterTexto(new_cliente.celular);
 
     arquivo = fopen(nome_arquivo, "a");
     if (verificaArquivo(arquivo))
@@ -341,8 +341,8 @@ void cadastrarCliente(Cliente *new_cliente)
     }
 
     fprintf(arquivo, "%d,%s,%s,%s,%s,%s,%s\n", // salvando as informacoes no arquivo
-            new_cliente->cod, new_cliente->nome, new_cliente->nome_social,
-            new_cliente->cpf, new_cliente->rua_num, new_cliente->bairro, new_cliente->celular);
+            new_cliente.cod, new_cliente.nome, new_cliente.nome_social,
+            new_cliente.cpf, new_cliente.rua_num, new_cliente.bairro, new_cliente.celular);
 
     fclose(arquivo); // fechando o arquivo
 }
@@ -469,15 +469,16 @@ void cadastrarCategorias(){
     do{
         printf("Insira a Categoria do produto\n");
         fgets(categoria, sizeof(categoria), stdin);
+         removeEnterTexto(categoria); // removendo o ("enter",\n) da string
         invalido = 1;
         
         if(strlen(categoria) < 2){
-            printf("Categoria invalida");
+            printf("Categoria invalida\n");
             invalido = 0;
         }
     }while(invalido == 0);
 
-    int id = contadorCaracterFile(CATEGORIAS, '\n') + 1;
+    int id = contadorCaracterFile(CATEGORIAS, '\n') + 1; // funcao para contar os "enter || \n" do arquivo, add + 1 pq ele inicia em 0
 
     open_create_file(CATEGORIAS, &arq); // abrindo o arquivo e verificando
 
