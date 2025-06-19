@@ -8,6 +8,7 @@
 #define max_caracter 100               // max de caracter para a descrição
 #define ARQUIVO "cadastrar&vendas.dat" // renomeando o arquivo que vai ser valvo
 #define CATEGORIAS "Categorias.dat"
+#define PRODUTOS "Produtos.dat"
 
 
 // structs------------------
@@ -41,14 +42,24 @@ typedef struct
     int estoque_Minimo;
 } Cadastrar_Produtos;
 
+typedef struct
+{
+    int id;
+    char produto[max_caracter];
+    char categoria_produto[max_caracter];
+    float preco_compra;
+    float margem_lucro;
+    float preco_venda;
+    int qtde_estoque;
+    int estoque_minimo;
+} Produtos;
+
 typedef struct{
     int id; 
     char categoria[30];
 } Categorias;
 
 // declaracao das funcoes ------------
-void cadastrar_Informacao_Produtos(Cadastrar_Produtos *pt);
-void salvar_Produtos_Arquivo(Cadastrar_Produtos *pt, FILE *arquivo);
 int menu_principal();
 int menu_cadastros();
 void main_cadastros();
@@ -56,10 +67,12 @@ void removeEnterTexto(char *);
 int contadorCaracterFile(char *, char);
 void cadastrar_usuario();
 void show_usuarios();
-void cadastrarCliente();
+void cadastrar_cliente();
 int verificaArquivo(FILE *arquivo);
 void limparBuffer();
-void cadastrarCategorias();
+void cadastrar_categorias();
+void cadastrar_produto();
+void open_create_file(char *arquivo, FILE **cftPtr);
 
 void pular_Linha()
 {
@@ -142,36 +155,20 @@ void main_cadastros()
         {
         case 1:
             cadastrar_usuario();
-            printf("---------------------------");
-            show_usuarios();
             break;
         case 2:
-            cadastrarCliente();
+            cadastrar_cliente();
             break;
         case 3:
-             // Aqui usei realloc para sempre termos memória e espaço no "deposito" e não passar por cima do estoque antigo
-            pt_Produtos = realloc(pt_Produtos, (quantidade + 1) * sizeof(Cadastrar_Produtos));
-            if (pt_Produtos == NULL)
-            {
-                printf("erro ao alocar memória!!!\n");
-                return;
-            }
-
-            cadastrar_Informacao_Produtos(&pt_Produtos[quantidade]);
-            FILE *arquivo = fopen(ARQUIVO, "a+");
-            if (arquivo == NULL)
-            {
-                printf("ERRO AO ABRIR O ARQUIVO!!!\n");
-                return;
-            }
-
-            salvar_Produtos_Arquivo(&pt_Produtos[quantidade], arquivo);
-            fclose(arquivo);
-
-            quantidade++;
+            cadastrar_produto();
             break;
         case 4:
-            cadastrarCategorias();
+            int count_categorias = contadorCaracterFile(CATEGORIAS, '\n');
+            if(count_categorias == 0 ){
+                printf("Sem categoria cadastrada, realizar o cadastro de uma antes\n");
+            }else{
+                cadastrar_categorias();
+            }
             break;
         case 5:
             printf("Obrigado por usar o nosso sistema!!!\n");
@@ -182,22 +179,6 @@ void main_cadastros()
         }
 
     } while ((opcao) != 5);
-}
-
-// funcoes utilitarios
-void removeEnterTexto(char *texto)
-{
-    texto[strcspn(texto, "\n")] = '\0'; // remove o "enter/ \n" do texto
-}
-
-void open_create_file(char *arquivo, FILE **cftPtr)
-{
-    // printf(arquivo, cftPtr);
-    if ((*cftPtr = fopen(arquivo, "a+")) == NULL)
-    {
-        printf("O arquivo nao pode ser aberto");
-        return;
-    }
 }
 
 void cadastrar_usuario()
@@ -261,33 +242,7 @@ void cadastrar_usuario()
     printf("Usuario cadastrado com sucesso\n");
 }
 
-int contadorCaracterFile(char *nome_arquivo, char caracter_desejado)
-{ // funcao para contar quantos caracteres especificos possuem em um arquivo
-    int contador = 0;
-    char caracter;
-    FILE *arquivo = fopen(nome_arquivo, "r"); // abrindo o arquivo
-
-    if (arquivo == NULL)
-    { // caso de um erro ao abrir o arquivo
-        printf("Erro ao abrir o arquivo.\n");
-        return 0;
-    }
-    // fgetc le um caracter por vez do arquivo, o caracter lido e armazenado na variavel
-    // o loop continua ate o final do arquivo
-    while ((caracter = fgetc(arquivo)) != EOF)
-    {
-        if (caracter == caracter_desejado)
-        {
-            contador++; // incrementando o contador
-        }
-    }
-
-    fclose(arquivo);
-
-    return contador;
-}
-
-void cadastrarCliente()
+void cadastrar_cliente()
 {
     Cliente new_cliente;
     char *nome_arquivo = DADOSCLIENTES; // declarando como ponteiro, para usar dentro do fopen da funcao a seguir
@@ -347,136 +302,101 @@ void cadastrarCliente()
     fclose(arquivo); // fechando o arquivo
 }
 
-int verificaArquivo(FILE *arquivo)
-{
-    if (arquivo == NULL)
-    {
-        perror("Erro ao abrir o arquivo"); // mostra erro mais detalhado
-        return 1;                          // indica erro
-    }
-    return 0; // tudo certo
-}
-
-
-void cadastrar_Informacao_Produtos(Cadastrar_Produtos *pt)
-{
-    printf("\n-- Cadastrar Produto --\n");
-    int validacao_de_Resposta = 0;
-
-    do
-    {
-        if (validacao_de_Resposta > 0)
-            printf("Valor digitado menor ou igual a zera! Digite outro valor...\n");
-
-        printf("ID: ");
-        scanf("%d", &pt->id);
-        getchar();
-        validacao_de_Resposta++;
-    } while (pt->id <= 0);
-    pular_Linha();
-    validacao_de_Resposta = 0;
-
-    printf("Descrição: ");
-    fgets(pt->descricao_Produto, max_caracter, stdin);
-    strtok(pt->descricao_Produto, "\n"); // Remove o \n do final
-    pular_Linha();
-
-    do
-    {
-        if (validacao_de_Resposta > 0)
-            printf("Valor digitado não é 1 ou 2 ou 3! Digite um valor valido...\n");
-
-        printf("Categoria (1-Alimentos, 2-Limpeza, 3-Panificação): ");
-        scanf("%d", &pt->categoria_Produto);
-        validacao_de_Resposta++;
-    } while (pt->categoria_Produto != 1 && pt->categoria_Produto != 2 && pt->categoria_Produto != 3);
-    pular_Linha();
-    validacao_de_Resposta = 0;
-
-    do
-    {
-        if (validacao_de_Resposta > 0)
-            printf("Valor digitado menor ou igual a zera! Digite outro valor...\n");
-
-        printf("VALOR DE COMPRA: ");
-        scanf("%f", &pt->Preco_De_Compra);
-        getchar();
-        validacao_de_Resposta++;
-    } while (pt->Preco_De_Compra <= 0);
-    pular_Linha();
-    validacao_de_Resposta = 0;
-
-    do
-    {
-        if (validacao_de_Resposta > 0)
-            printf("Valor digitado menor ou igual a zera! Digite outro valor...\n");
-
-        printf("PREÇO DE VENDA: ");
-        scanf("%f", &pt->Preco_De_Venda);
-        getchar();
-        validacao_de_Resposta++;
-    } while (pt->Preco_De_Venda <= 0);
-    pular_Linha();
-    validacao_de_Resposta = 0;
-
-    do
-    {
-        if (validacao_de_Resposta > 0)
-            printf("Valor digitado menor ou igual a zera! Digite outro valor...\n");
-
-        printf("QUANTIDADE ESTOQUE: ");
-        scanf("%d", &pt->Quantidade_em_Estoque);
-        getchar();
-        validacao_de_Resposta++;
-    } while (pt->Quantidade_em_Estoque <= 0);
-    pular_Linha();
-    validacao_de_Resposta = 0;
-
-    do
-    {
-        if (validacao_de_Resposta > 0)
-            printf("Valor digitado menor ou igual a zera! Digite outro valor...\n");
-
-        printf("ESTOQUE MINÍMO: ");
-        scanf("%d", &pt->estoque_Minimo);
-        getchar();
-        validacao_de_Resposta++;
-    } while (pt->estoque_Minimo <= 0);
-    pular_Linha();
-    validacao_de_Resposta = 0;
-}
-
-
-void salvar_Produtos_Arquivo(Cadastrar_Produtos *pt, FILE *arquivo)
-{
-    fprintf(arquivo, "%d;%s;%d;%.2f;%.2f;%d;%d\n",
-            pt->id,
-            pt->descricao_Produto,
-            pt->categoria_Produto,
-
-            pt->Preco_De_Compra,
-            pt->Preco_De_Venda,
-            pt->Quantidade_em_Estoque,
-            pt->estoque_Minimo);
-}
-
-void cadastrarCategorias(){
+void cadastrar_produto(){
     FILE *arq;
-    int invalido;
+    Produtos prod;
+    Categorias cat;
+    int opcao ;
+    int invalido = 0;
+
+    printf("---------Cadastrar Produto---------\n");
+
+    printf("Produto\n");
+    fgets(prod.produto, sizeof(Produtos), stdin);
+    removeEnterTexto(prod.produto);
+
+    if((arq = fopen(CATEGORIAS, "r")) == NULL){
+        printf("deu PT");
+    }
+
+    int count_categorias = contadorCaracterFile(CATEGORIAS, '\n') + 1;
+    printf("Categorias:\n");
+    while(fscanf(arq, "%d %s", &cat.id, cat.categoria)!= EOF ){
+        printf("[%d] - %s\n", cat.id, cat.categoria);
+    }
+    fclose(arq);
+    do{
+        printf("Escolha uma opcao: \n");
+        scanf("%d", &opcao);
+        invalido = 1;
+
+        if((opcao <= 0 || opcao > count_categorias)){
+            invalido = 0;
+        }
+        
+    }while( invalido == 0);
+
+    if((arq = fopen(CATEGORIAS, "r")) == NULL){
+        printf("deu PT");
+    }
+
+    while(fscanf(arq, "%d %s", &cat.id, cat.categoria)!= EOF ){
+        if(opcao == cat.id){
+            strcpy(prod.categoria_produto, cat.categoria);
+        }
+    }
+    fclose(arq);
+
+    do
+    {
+        printf("Valor de compra\n");
+        scanf("%f", &prod.preco_compra);
+    } while (prod.preco_compra <= 0);
+    
+    do
+    {
+        printf("Valor de venda\n");
+        scanf("%f", &prod.preco_venda);
+    } while (prod.preco_venda <= 0);
+
+    do
+    {
+        printf("Quantidade em estoque\n");
+        scanf("%d", &prod.qtde_estoque);
+    } while (prod.qtde_estoque <= 0);
+
+    do
+    {
+        printf("Estoque minimo\n");
+        scanf("%d", &prod.estoque_minimo);
+    } while (prod.estoque_minimo <= 0);
+
+    int id = contadorCaracterFile(PRODUTOS, '\n') + 1;
+
+    open_create_file(PRODUTOS, &arq); // abrindo o arquivo e verificando
+
+    fprintf(arq, "%d %s %s %.2f %.2f %.2f %d %d \n", 
+        id,
+        prod.produto,
+        prod.categoria_produto,
+        prod.preco_compra,
+        prod.margem_lucro,
+        prod.preco_venda,
+        prod.qtde_estoque,
+        prod.estoque_minimo    
+    ); // salvando as informacoes
+    fclose(arq);                                                      // fechando o arquivo
+
+    printf("Produto cadastrado com sucesso\n");
+}
+
+void cadastrar_categorias(){
+    FILE *arq;
     char categoria[30];
     
     printf("----Cadastro de Categoria----\n");
-    do{
-        printf("Insira a Categoria do produto\n");
-        fgets(categoria, sizeof(categoria), stdin);
-         removeEnterTexto(categoria); // removendo o ("enter",\n) da string
-        invalido = 1;
-        
-        if(strlen(categoria) < 2){
-            printf("Categoria invalida\n");
-            invalido = 0;
-        }
-    }while(invalido == 0);
+    printf("Insira a Categoria do produto\n");
+    fgets(categoria, sizeof(categoria), stdin);
 
     int id = contadorCaracterFile(CATEGORIAS, '\n') + 1; // funcao para contar os "enter || \n" do arquivo, add + 1 pq ele inicia em 0
 
@@ -485,7 +405,59 @@ void cadastrarCategorias(){
     fprintf(arq, "%d %s", id, categoria);
     fclose(arq);
 
-    printf("Categoria cadastrado com sucesso");
+    printf("Categoria cadastrado com sucesso\n");
+}
+
+
+int contadorCaracterFile(char *nome_arquivo, char caracter_desejado)
+{ // funcao para contar quantos caracteres especificos possuem em um arquivo
+    int contador = 0;
+    char caracter;
+    FILE *arquivo = fopen(nome_arquivo, "r"); // abrindo o arquivo
+
+    if (arquivo == NULL)
+    { // caso de um erro ao abrir o arquivo
+        printf("Erro ao abrir o arquivo.\n");
+        return 0;
+    }
+    // fgetc le um caracter por vez do arquivo, o caracter lido e armazenado na variavel
+    // o loop continua ate o final do arquivo
+    while ((caracter = fgetc(arquivo)) != EOF)
+    {
+        if (caracter == caracter_desejado)
+        {
+            contador++; // incrementando o contador
+        }
+    }
+
+    fclose(arquivo);
+
+    return contador;
+}
+
+void limparBuffer()
+{
+    int ch;
+    // descarte todos os caracter que ainda estao no buffer, como \n
+    // garantindo que o próximo comando de entrada comece em uma entrada limpa
+    while ((ch = getchar()) != '\n' && ch != EOF)
+        ;
+}
+
+// funcoes utilitarios
+void removeEnterTexto(char *texto)
+{
+    texto[strcspn(texto, "\n")] = '\0'; // remove o "enter/ \n" do texto
+}
+
+void open_create_file(char *arquivo, FILE **cftPtr)
+{
+    // printf(arquivo, cftPtr);
+    if ((*cftPtr = fopen(arquivo, "a+")) == NULL)
+    {
+        printf("O arquivo nao pode ser aberto\n");
+        return;
+    }
 }
 
 
@@ -514,13 +486,12 @@ void show_usuarios()
     }
 }
 
-void limparBuffer()
+int verificaArquivo(FILE *arquivo)
 {
-    int ch;
-    // descarte todos os caracter que ainda estao no buffer, como \n
-    // garantindo que o próximo comando de entrada comece em uma entrada limpa
-    while ((ch = getchar()) != '\n' && ch != EOF)
-        ;
+    if (arquivo == NULL)
+    {
+        perror("Erro ao abrir o arquivo\n"); // mostra erro mais detalhado
+        return 1;                          // indica erro
+    }
+    return 0; // tudo certo
 }
-
-
