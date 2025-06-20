@@ -52,7 +52,16 @@ typedef struct
     float preco_venda;
     int qtde_estoque;
     int estoque_minimo;
+    struct Produtos *prox;
 } Produtos;
+
+typedef struct {
+    int id;
+    int id_usuario;
+    int id_produto;
+    int quantidade;
+
+} Carrinho;
 
 typedef struct{
     int id; 
@@ -73,6 +82,14 @@ void limparBuffer();
 void cadastrar_categorias();
 void cadastrar_produto();
 void open_create_file(char *arquivo, FILE **cftPtr);
+void show_produtos_venda();
+Produtos lista_produtos(Produtos *lista);
+
+int menu_vendas();
+void main_vendas();
+void nova_venda();
+
+
 
 void pular_Linha()
 {
@@ -84,6 +101,10 @@ int main()
 {
     int opcao;
 
+    FILE *arq;
+    Produtos produtos;
+    verificaArquivo((arq = fopen(PRODUTOS, "r")));
+    fclose(arq);
     do
     {
         opcao = menu_principal();
@@ -94,8 +115,10 @@ int main()
             main_cadastros();
             break;
         case 2:
+            main_vendas();
             break;
         case 3:
+            lista_produtos(produtos);
             break;
         case 4:
             break;
@@ -126,28 +149,10 @@ int menu_principal()
     fgets(opcao, sizeof(opcao), stdin);
     return atoi(opcao);
 }
-int menu_cadastros()
-{
-    char opcao[3];
-    printf(
-        "Menu Cadastros\n"
-        "\t[1] - Cadastro de usuarios\n"
-        "\t[2] - Cadastro de Clientes\n"
-        "\t[3] - Cadastro de Produtos\n"
-        "\t[4] - Cadastro de Categoria\n"
-        "\t[5] - Retornar ao Menu Principa\n");
-    fgets(opcao, sizeof(opcao), stdin);
-    return atoi(opcao);
-}
 
 void main_cadastros()
 {
     int opcao;
-
-    Cliente cliente;
-    Cadastrar_Produtos *pt_Produtos = NULL;
-    int quantidade = 0;
-    FILE *arquivo;
     do
     {
         opcao = menu_cadastros();
@@ -171,7 +176,7 @@ void main_cadastros()
             }
             break;
         case 5:
-            printf("Obrigado por usar o nosso sistema!!!\n");
+            printf("Saindo dos Cadastros!!!\n");
             break;
         default:
             printf("Opcao Invalida!!!\n");
@@ -180,6 +185,61 @@ void main_cadastros()
 
     } while ((opcao) != 5);
 }
+
+
+int menu_cadastros()
+{
+    char opcao[3];
+    printf(
+        "Menu Cadastros\n"
+        "\t[1] - Cadastro de usuarios\n"
+        "\t[2] - Cadastro de Clientes\n"
+        "\t[3] - Cadastro de Produtos\n"
+        "\t[4] - Cadastro de Categoria\n"
+        "\t[5] - Retornar ao Menu Principa\n");
+    fgets(opcao, sizeof(opcao), stdin);
+    return atoi(opcao);
+}
+
+void main_vendas()
+{
+    int opcao;
+    do
+    {
+        opcao = menu_vendas();
+        switch ((opcao))
+        {
+        case 1:
+            nova_venda();
+        break;
+        case 2:
+        break;
+        case 3:
+        break;
+        case 4:
+            printf("Saindo das Vendas!!!\n");
+        break;
+        default:
+            printf("Opcao Invalida!!!\n");
+        break;
+        }
+
+    } while ((opcao) != 4);
+}
+
+int menu_vendas(){
+    char opcao[3];
+    printf(
+        "Menu Vendas\n"
+        "\t[1] - Nova Venda\n"
+        "\t[2] - Retirada de Caixa (Sangria)\n"
+        "\t[3] - Pagamento\n"
+        "\t[4] - Retornar ao Menu Principal\n"
+    );
+    fgets(opcao, sizeof(opcao), stdin);
+    return atoi(opcao);
+}
+
 
 void cadastrar_usuario()
 {
@@ -460,6 +520,15 @@ void open_create_file(char *arquivo, FILE **cftPtr)
     }
 }
 
+int verificaArquivo(FILE *arquivo)
+{
+    if (arquivo == NULL)
+    {
+        perror("Erro ao abrir o arquivo\n"); // mostra erro mais detalhado
+        return 1;                          // indica erro
+    }
+    return 0; // tudo certo
+}
 
 void show_usuarios()
 {
@@ -486,12 +555,54 @@ void show_usuarios()
     }
 }
 
-int verificaArquivo(FILE *arquivo)
-{
-    if (arquivo == NULL)
-    {
-        perror("Erro ao abrir o arquivo\n"); // mostra erro mais detalhado
-        return 1;                          // indica erro
+void nova_venda(){
+    FILE *arq;
+    
+    show_produtos_venda();
+
+
+    printf("Carrinho------\n");
+    printf("Informe o codigo de produto\n");
+
+}
+
+void show_produtos_venda(){
+    FILE *arq;
+    Produtos produtos;
+     Produtos *novo = (Produtos*)  malloc(sizeof(Produtos));
+    
+    verificaArquivo((arq = fopen(PRODUTOS, "r")));
+
+    while(
+        fscanf(arq, "%d %s %s %f %f %f %d %d \n", 
+        &produtos.id,
+        produtos.produto,
+        produtos.categoria_produto,
+        &produtos.preco_compra,
+        &produtos.margem_lucro,
+        &produtos.preco_venda,
+        &produtos.qtde_estoque,
+        &produtos.estoque_minimo) != EOF
+    ){
+        printf("Codigo | Descricao | Categoria | Preco Venda | Qtd Estoque |\n");
+        printf("%6d | %9s | %9s | %11.2f | %11d |\n", 
+            produtos.id, produtos.produto, produtos.categoria_produto, produtos.preco_venda, produtos.qtde_estoque
+        );
+
+        
     }
-    return 0; // tudo certo
+    fclose(arq);
+}
+
+Produtos lista_produtos(Produtos *lista){
+    Produtos atual = *lista;
+    Produtos *anterior = NULL;
+
+    Produtos *novo = (Produtos*)  malloc(sizeof(Produtos));
+    novo->id = lista->id;
+    strcpy(novo->produto, lista->produto);
+    strcpy(novo->categoria_produto, lista->categoria_produto);
+    novo->preco_venda = lista->preco_venda;
+    novo->qtde_estoque
+
 }
