@@ -583,6 +583,7 @@ void nova_venda(){
     time_t t = time(NULL);
     struct tm *tm_info = localtime(&t);
 
+    FILE *arq_venda;
     FILE *arq;
     Carrinho carrinho;
     Venda venda;
@@ -600,7 +601,7 @@ void nova_venda(){
 
     printf("Venda------\n");
     id = contadorCaracterFile(VENDA, '\n') + 1;
-    open_create_file(VENDA, &arq);
+    open_create_file(VENDA, &arq_venda);
     venda.id = id;
 
     printf("Informe o codigo do usuario\n");
@@ -691,17 +692,17 @@ void nova_venda(){
         printf("Total Final: %.2f\n", val_total);
         venda.total_venda = 0;
     }
-        fprintf(arq, "%d %d %d %d %d %.2f %s %.2f\n", 
+        fprintf(arq_venda, "%d %d %d %d %d %.2f %s %.2f\n", 
         venda.id,
         venda.id_cliente,
         venda.dia,
         venda.mes,
         venda.ano,
         venda.desconto,
-        'a',
+        "a",
         venda.total_venda
     );
-    fclose(arq);
+    fclose(arq_venda);
 
     liberar_lista_itens_venda(lista_itens);
 
