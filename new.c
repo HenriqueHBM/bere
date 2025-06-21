@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 // defines ------------------
 #define USUARIOS "Usuarios.dat" // nome do arquivo binario para salvar os usuarios
@@ -9,6 +10,9 @@
 #define ARQUIVO "cadastrar&vendas.dat" // renomeando o arquivo que vai ser valvo
 #define CATEGORIAS "Categorias.dat"
 #define PRODUTOS "Produtos.dat"
+#define CARRINHO "Carrinho.dat"
+#define VENDA "Venda.dat"
+#define ITENSVENDA "ItensVenda.dat"
 
 
 // structs------------------
@@ -42,7 +46,7 @@ typedef struct
     int estoque_Minimo;
 } Cadastrar_Produtos;
 
-typedef struct
+typedef struct Produtos 
 {
     int id;
     char produto[max_caracter];
@@ -55,13 +59,37 @@ typedef struct
     struct Produtos *prox;
 } Produtos;
 
-typedef struct {
+typedef struct Carrinho{
     int id;
     int id_usuario;
     int id_produto;
     int quantidade;
-
 } Carrinho;
+
+typedef struct Venda
+{
+    int id;
+    int id_cliente;
+    int dia; 
+    int mes; 
+    int ano;
+    float desconto;
+    char status_pagamento[5];
+    float total_venda;
+    struct Venda * prox;
+} Venda;
+
+typedef struct ItensVenda{
+    int id;
+    int id_venda;
+    int id_produto;
+    char descricao[max_caracter];
+    float preco_venda;
+    int quantidade;
+    float total_item;
+    struct ItensVenda *prox;
+} ItensVenda;
+
 
 typedef struct{
     int id; 
@@ -82,13 +110,14 @@ void limparBuffer();
 void cadastrar_categorias();
 void cadastrar_produto();
 void open_create_file(char *arquivo, FILE **cftPtr);
-void show_produtos_venda();
-Produtos lista_produtos(Produtos *lista);
+void show_produtos_venda(Produtos*);
+Produtos* lista_produtos(Produtos *);
+void liberar_lista_produtos(Produtos *);
+void liberar_lista_itens_venda(ItensVenda *);
 
 int menu_vendas();
 void main_vendas();
 void nova_venda();
-
 
 
 void pular_Linha()
@@ -100,11 +129,7 @@ void pular_Linha()
 int main()
 {
     int opcao;
-
-    FILE *arq;
-    Produtos produtos;
-    verificaArquivo((arq = fopen(PRODUTOS, "r")));
-    fclose(arq);
+    
     do
     {
         opcao = menu_principal();
@@ -118,7 +143,6 @@ int main()
             main_vendas();
             break;
         case 3:
-            lista_produtos(produtos);
             break;
         case 4:
             break;
@@ -556,21 +580,148 @@ void show_usuarios()
 }
 
 void nova_venda(){
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+
     FILE *arq;
+    Carrinho carrinho;
+    Venda venda;
     
-    show_produtos_venda();
+    Produtos *lista;
+    char opcao[5];
+    int usuario, id = 0, valido = 0;
 
+    ItensVenda *anterior = NULL;
+    ItensVenda *lista_itens;
 
-    printf("Carrinho------\n");
-    printf("Informe o codigo de produto\n");
+    lista = lista_produtos(lista);
+    show_produtos_venda(lista);
+    
+
+    printf("Venda------\n");
+    id = contadorCaracterFile(VENDA, '\n') + 1;
+    open_create_file(VENDA, &arq);
+    venda.id = id;
+
+    printf("Informe o codigo do usuario\n");
+    scanf("%d", &venda.id_cliente);
+
+    venda.dia = tm_info->tm_mday;
+    venda.mes = tm_info->tm_mon + 1;
+    venda.ano = tm_info->tm_year + 1900;
+
+    do{
+        ItensVenda *it_venda = (ItensVenda*) malloc(sizeof(ItensVenda));
+
+        id = contadorCaracterFile(ITENSVENDA, '\n') + 1;
+        it_venda->id = id;
+        it_venda->id_venda = venda.id; 
+
+        do{
+            printf("Informe o codigo de produto\n");
+            scanf("%d", &it_venda->id_produto);
+            
+            Produtos *produtos = lista;
+            while(produtos != NULL){
+
+                if(produtos->id == it_venda->id_produto){
+                    valido = 1;
+                    strcpy(it_venda->descricao, produtos->produto);
+                    it_venda->preco_venda = produtos->preco_venda;
+                }
+                produtos = produtos->prox;
+            }
+
+            if(valido != 1){
+                printf("Opcao Invalida\n");
+            }
+        }while(valido != 1 );
+        valido = 0;
+
+        do{
+            printf("Informe a quantidade de produto!\n");
+            scanf("%d", &it_venda->quantidade);
+        }while(it_venda->quantidade < 0);
+    
+        it_venda->total_item = (it_venda->preco_venda * it_venda->quantidade);
+
+        open_create_file(ITENSVENDA, &arq); // abrindo o arquivo e verificando
+        
+        fprintf(arq, "%d %d %d %s %.2f %d %.2f\n", 
+            it_venda->id,
+            it_venda->id_venda,
+            it_venda->id_produto,
+            it_venda->descricao,
+            it_venda->preco_venda,
+            it_venda->quantidade,
+            it_venda->total_item
+        ); // salvando as informacoes
+        fclose(arq);
+
+        printf("Deseja adicionar mais produtos(s/n)  ?\n");
+        getchar();
+        scanf("%s", opcao);
+
+        if(anterior == NULL){
+            lista_itens = it_venda;
+        }else{
+            anterior->prox = it_venda;
+        }
+        anterior = it_venda;
+
+    }while(strcmp(opcao, "s") == 0);
+
+    printf("Ha desconto? (informe 0 (para nao) ou informe o desonto concedido\n");
+    scanf("%f", &venda.desconto);
+
+    liberar_lista_produtos(lista);
+    
+    float val_total = 0;
+    printf("Codigo | Descriaoo | Preco Venda | Qtd | Total\n");
+    while(lista_itens != NULL){
+        printf("%6d %9s %15.2f %5d %7.2f \n", lista_itens->id_produto, lista_itens->descricao, lista_itens->preco_venda, lista_itens->quantidade, lista_itens->total_item);
+        val_total += lista_itens->total_item;
+        lista_itens = lista_itens->prox;
+    }
+    printf("Total Carrinho: %.2f \n", val_total);
+    printf("Desconto: %.2f \n", venda.desconto);
+    if(venda.desconto > 0){
+        printf("Total Final: %.2f \n", venda.total_venda = (val_total - (venda.desconto * val_total) / 100));
+    }else{
+        printf("Total Final: %.2f\n", val_total);
+        venda.total_venda = 0;
+    }
+        fprintf(arq, "%d %d %d %d %d %.2f %s %.2f\n", 
+        venda.id,
+        venda.id_cliente,
+        venda.dia,
+        venda.mes,
+        venda.ano,
+        venda.desconto,
+        'a',
+        venda.total_venda
+    );
+    fclose(arq);
+
+    liberar_lista_itens_venda(lista_itens);
 
 }
 
-void show_produtos_venda(){
+void show_produtos_venda(Produtos *lista){
+    printf("Codigo | Descricao | Categoria | Preco Venda | Qtd Estoque |\n");
+    Produtos *produtos = lista;
+    while(produtos != NULL){
+        printf("%6d | %9s | %9s | %11.2f | %11d |\n", 
+            produtos->id, produtos->produto, produtos->categoria_produto, produtos->preco_venda, produtos->qtde_estoque
+        );
+        produtos = produtos->prox;
+    }
+}
+
+Produtos* lista_produtos(Produtos *lista){
     FILE *arq;
     Produtos produtos;
-     Produtos *novo = (Produtos*)  malloc(sizeof(Produtos));
-    
+    Produtos *anterior = NULL;
     verificaArquivo((arq = fopen(PRODUTOS, "r")));
 
     while(
@@ -584,25 +735,44 @@ void show_produtos_venda(){
         &produtos.qtde_estoque,
         &produtos.estoque_minimo) != EOF
     ){
-        printf("Codigo | Descricao | Categoria | Preco Venda | Qtd Estoque |\n");
-        printf("%6d | %9s | %9s | %11.2f | %11d |\n", 
-            produtos.id, produtos.produto, produtos.categoria_produto, produtos.preco_venda, produtos.qtde_estoque
-        );
+        Produtos *atual = (Produtos*)  malloc(sizeof(Produtos));
+        atual->id = produtos.id;
+        strcpy(atual->produto, produtos.produto);
+        strcpy(atual->categoria_produto, produtos.categoria_produto);
+        atual->preco_compra = produtos.preco_compra;
+        atual->margem_lucro = produtos.margem_lucro;
+        atual->preco_venda = produtos.preco_venda;
+        atual->qtde_estoque = produtos.qtde_estoque;
+        atual->estoque_minimo = produtos.estoque_minimo;
+        atual->prox = NULL;
 
-        
+        if(anterior == NULL){
+            lista = atual;
+        }else{
+            anterior->prox = atual;
+        }
+
+        anterior = atual;
     }
     fclose(arq);
+
+    return lista;
 }
 
-Produtos lista_produtos(Produtos *lista){
-    Produtos atual = *lista;
-    Produtos *anterior = NULL;
+void liberar_lista_produtos(Produtos *lista){
+    Produtos* temp;
+    while (lista != NULL){
+        temp = lista;
+        lista = lista->prox;
+        free(temp);
+    }
+}
 
-    Produtos *novo = (Produtos*)  malloc(sizeof(Produtos));
-    novo->id = lista->id;
-    strcpy(novo->produto, lista->produto);
-    strcpy(novo->categoria_produto, lista->categoria_produto);
-    novo->preco_venda = lista->preco_venda;
-    novo->qtde_estoque
-
+void liberar_lista_itens_venda(ItensVenda *lista){
+    ItensVenda* temp;
+    while (lista != NULL){
+        temp = lista;
+        lista = lista->prox;
+        free(temp);
+    }
 }
